@@ -1,0 +1,4 @@
+<view class="lazy-image-comp" style="{{styles}}">
+  <image wx:if="{{showed || !supportObserver}}" lazy-load src="{{src}}" data-img="{{src}}" style="{{styles}}" mode="{{mode}}" bindload="onLoad" />
+  <view wx:else style="{{styles}}" class="preview-image" data-src="{{src}}"></view>
+</view>

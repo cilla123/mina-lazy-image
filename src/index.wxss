@@ -1,0 +1,25 @@
+@-webkit-keyframes animateShow {
+  0% {
+      opacity: 0
+  }
+  100% {
+      opacity: 1
+  }
+}
+
+@keyframes animateShow {
+  0% {
+      opacity: 0
+  }
+  100% {
+      opacity: 1
+  }
+}
+
+.lazy-image-comp .preview-image{
+  background: #f1f1f1;
+}
+
+.lazy-image-comp image{
+  animation: .5s animateShow forwards;
+}
