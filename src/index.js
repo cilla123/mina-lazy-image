@@ -124,9 +124,11 @@ Component({
         if (showedImages.indexOf(currentImage) === -1) {
           showed = false
         }
-        this.setData({
-          showed
-        })
+        if (this.data.showed !== showed) {
+          this.setData({
+            showed
+          })
+        }
       } catch (e) {
         console.error(e)
       }
