@@ -1,7 +1,8 @@
 Component({
   data: {
     supportObserver: !!wx.createIntersectionObserver,
-    showed: false
+    showed: false,
+    previewSrc: ''
   },
 
   attached() {
@@ -126,7 +127,8 @@ Component({
         }
         if (this.data.showed !== showed) {
           this.setData({
-            showed
+            showed,
+            previewSrc: currentImage
           })
         }
       } catch (e) {
