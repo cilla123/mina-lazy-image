@@ -1,12 +1,22 @@
+const temp = {}
+
 Component({
   data: {
     supportObserver: !!wx.createIntersectionObserver,
-    showed: false
+    showed: false,
+    id: ''
   },
 
-  attached() {
-    this.showedImages = []
-    this.observers = {}
+  created() {
+    const id = Math.random()
+      .toString(36)
+      .substr(2, 9)
+    this.data.__id = id
+    temp[id] = {
+      showedImages: [],
+      observers: {},
+      timer: null
+    }
   },
 
   ready() {
@@ -14,17 +24,17 @@ Component({
   },
 
   detached() {
-    if (this.observerTimer) {
-      clearTimeout(this.observerTimer)
-      this.observerTimer = undefined
+    if (temp[this.data.__id].timer) {
+      clearTimeout(temp[this.data.__id].timer)
+      temp[this.data.__id].timer = null
     }
-    if (this.observers) {
-      Object.keys(this.observers).forEach((key) => {
-        this.observers[key].disconnect()
+    if (temp[this.data.__id].observers) {
+      Object.keys(temp[this.data.__id].observers).forEach(key => {
+        temp[this.data.__id].observers[key].disconnect()
       })
-      this.observers = undefined
+      temp[this.data.__id].observers = {}
     }
-    this.showedImages = undefined
+    delete temp[this.data.__id]
   },
 
   properties: {
@@ -32,13 +42,13 @@ Component({
       type: String,
       value: '',
       observer(newVal, oldVal) {
-        if (oldVal && this.showedImages) {
-          const index = this.showedImages.indexOf(oldVal)
+        if (oldVal && temp[this.data.__id].showedImages) {
+          const index = temp[this.data.__id].showedImages.indexOf(oldVal)
           if (index > -1) {
-            this.showedImages.splice(index, 1)
-            if (this.observers[oldVal]) {
-              this.observers[oldVal].disconnect()
-              this.observers[oldVal] = undefined
+            temp[this.data.__id].showedImages.splice(index, 1)
+            if (temp[this.data.__id].observers[oldVal]) {
+              temp[this.data.__id].observers[oldVal].disconnect()
+              temp[this.data.__id].observers[oldVal] = undefined
             }
           }
         }
@@ -63,27 +73,29 @@ Component({
       if (!target.src) {
         return
       }
-      if (this.showedImages.indexOf(target.src) > -1) {
+      if (temp[this.data.__id].showedImages.indexOf(target.src) > -1) {
         return
       }
       const oid = target.src
       if (
-        !this.observers[oid] &&
-        this.showedImages.indexOf(target.src) === -1
+        !temp[this.data.__id].observers[oid] &&
+        temp[this.data.__id].showedImages.indexOf(target.src) === -1
       ) {
         console.log('add image observer', oid)
-        this.observers[oid] = this.createIntersectionObserver()
-        this.observers[oid]
+        temp[this.data.__id].observers[oid] = this.createIntersectionObserver()
+        temp[this.data.__id].observers[oid]
           .relativeToViewport({bottom: 0})
           .observe('.preview-image', res => {
             if (
               res.dataset &&
               res.dataset.src &&
-              this.showedImages.indexOf(res.dataset.src) === -1
+              temp[this.data.__id].showedImages.indexOf(res.dataset.src) === -1
             ) {
-              this.showedImages = this.showedImages.concat(res.dataset.src)
-              this.observers[oid].disconnect()
-              delete this.observers[oid]
+              temp[this.data.__id].showedImages = temp[
+                this.data.__id
+              ].showedImages.concat(res.dataset.src)
+              temp[this.data.__id].observers[oid].disconnect()
+              delete temp[this.data.__id].observers[oid]
               console.log(`show image: ${res.dataset.src}`)
               console.log('remove observer', oid)
               this.refreshView()
@@ -106,12 +118,12 @@ Component({
             src: this.properties.src
           })
         }
-        this.observerTimer = setTimeout(() => {
+        temp[this.data.__id].timer = setTimeout(() => {
           check.call(this)
         }, 350)
       }
       if (this.data.supportObserver) {
-        this.observerTimer = setTimeout(() => {
+        temp[this.data.__id].timer = setTimeout(() => {
           check.call(this)
         }, 200)
       }
@@ -119,7 +131,7 @@ Component({
     refreshView() {
       try {
         const currentImage = this.properties.src
-        const showedImages = this.showedImages || []
+        const showedImages = temp[this.data.__id].showedImages || []
         let showed = true
         if (showedImages.indexOf(currentImage) === -1) {
           showed = false
