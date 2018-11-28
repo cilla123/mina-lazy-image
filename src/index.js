@@ -8,18 +8,31 @@ Component({
   },
 
   created() {
-    const id = Math.random()
-      .toString(36)
-      .substr(2, 9)
-    this.data.__id = id
-    temp[id] = {
-      showedImages: [],
-      observers: {},
-      timer: null
+    if (!this.data.__id) {
+      const id = Math.random()
+        .toString(36)
+        .substr(2, 9)
+      this.data.__id = id
+      temp[id] = {
+        showedImages: [],
+        observers: {},
+        timer: null
+      }
     }
   },
 
   ready() {
+    if (!this.data.__id) {
+      const id = Math.random()
+        .toString(36)
+        .substr(2, 9)
+      this.data.__id = id
+      temp[id] = {
+        showedImages: [],
+        observers: {},
+        timer: null
+      }
+    }
     this.addObserver()
   },
 
