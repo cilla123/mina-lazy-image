@@ -1,4 +1,30 @@
-const temp = {}
+const temp = {
+  listeners: {},
+  timer: null
+}
+
+function addListener(key, handler) {
+  if (key) {
+    temp.listeners[key] = handler
+  }
+  if (!temp.timer) {
+    temp.timer = setInterval(() => {
+      Object.keys(temp.listeners).forEach((key) => {
+        temp.listeners[key]()
+      })
+    }, 200)
+  }
+}
+
+function removeListener(key) {
+  if (key) {
+    delete temp.listeners[key]
+  }
+  if (Object.keys(temp.listeners).length === 0 && temp.timer) {
+    clearInterval(temp.timer)
+    temp.timer = null
+  }
+}
 
 Component({
   data: {
@@ -37,10 +63,7 @@ Component({
   },
 
   detached() {
-    if (temp[this.data.__id].timer) {
-      clearTimeout(temp[this.data.__id].timer)
-      temp[this.data.__id].timer = null
-    }
+    removeListener(this.data.__id)
     if (temp[this.data.__id].observers) {
       Object.keys(temp[this.data.__id].observers).forEach(key => {
         temp[this.data.__id].observers[key].disconnect()
@@ -117,9 +140,13 @@ Component({
       }
     },
     addObserver() {
+      const that = this
       async function check() {
+        if (temp[that.data.__id].showedImages.indexOf(that.properties.src) > -1) {
+          return
+        }
         const exist = await new Promise(resolve => {
-          this.createSelectorQuery()
+          that.createSelectorQuery()
             .select('.preview-image')
             .boundingClientRect(async rect => {
               resolve(rect)
@@ -127,19 +154,12 @@ Component({
             .exec()
         })
         if (exist) {
-          this.addImageObserver({
-            src: this.properties.src
+          that.addImageObserver({
+            src: that.properties.src
           })
         }
-        temp[this.data.__id].timer = setTimeout(() => {
-          check.call(this)
-        }, 350)
       }
-      if (this.data.supportObserver) {
-        temp[this.data.__id].timer = setTimeout(() => {
-          check.call(this)
-        }, 200)
-      }
+      addListener(that.data.__id, check)
     },
     refreshView() {
       try {
