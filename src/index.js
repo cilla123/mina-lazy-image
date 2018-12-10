@@ -125,6 +125,8 @@ Component({
             if (
               res.dataset &&
               res.dataset.src &&
+              this.data.__id &&
+              temp[this.data.__id] &&
               temp[this.data.__id].showedImages.indexOf(res.dataset.src) === -1
             ) {
               temp[this.data.__id].showedImages = temp[
